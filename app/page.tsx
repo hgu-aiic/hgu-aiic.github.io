@@ -95,6 +95,7 @@ export default function Home() {
   function goToStoryScene(index: number) { const story = storyRef.current; if (!story) return; const range = Math.max(1, story.offsetHeight - window.innerHeight); window.scrollTo({ top: story.offsetTop + (index / (sceneLabels.length - 1)) * range, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }
   async function submitContact(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
     setSending(true);
     const endpoint = process.env.NEXT_PUBLIC_CONTACT_API_URL?.trim();
     if (!endpoint) {
@@ -103,9 +104,9 @@ export default function Home() {
       return;
     }
     try {
-      const response = await fetch(endpoint, { method: "POST", body: new FormData(event.currentTarget) });
+      const response = await fetch(endpoint, { method: "POST", body: new FormData(form) });
       if (!response.ok) throw new Error(`Contact request failed: ${response.status}`);
-      event.currentTarget.reset();
+      form.reset();
       setSent(true);
     } catch {
       alert("문의 전송에 실패했습니다. 잠시 후 다시 시도해 주세요.");
