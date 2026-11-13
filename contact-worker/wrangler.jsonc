@@ -11,7 +11,7 @@
 		]
 	},
 	"vars": {
-		"ALLOWED_ORIGINS": "https://ax-center.github.io",
+		"ALLOWED_ORIGINS": "https://hgu-aiic.github.io,https://ax-center.github.io",
 		"CONTACT_FROM_EMAIL": "AI Accelerator <onboarding@resend.dev>"
 	},
 	"preview_urls": false,

@@ -6,6 +6,7 @@ interface Env {
 }
 
 const DEFAULT_ALLOWED_ORIGINS = [
+  "https://hgu-aiic.github.io",
   "https://ax-center.github.io",
   "http://localhost:5173",
   "http://127.0.0.1:5173",

@@ -57,7 +57,7 @@ npm run build
 정적 결과물은 `out/`에 생성됩니다. GitHub Pages와 동일한 저장소 하위 경로로 직접 확인하려면 PowerShell에서 다음처럼 빌드합니다.
 
 ```powershell
-$env:NEXT_PUBLIC_BASE_PATH="/hgu-ai-accelerator"
+$env:NEXT_PUBLIC_BASE_PATH=""
 npm run build
 ```
 
@@ -157,4 +157,4 @@ Value: https://<worker-name>.<account>.workers.dev/contact
 
 `RESEND_API_KEY`는 GitHub에 넣지 않고 Cloudflare Worker Secret으로만 관리합니다.
 
-GitHub Pages 주소: [https://ax-center.github.io/hgu-ai-accelerator/](https://ax-center.github.io/hgu-ai-accelerator/)
+GitHub Pages 주소: [https://hgu-aiic.github.io/](https://hgu-aiic.github.io/)
