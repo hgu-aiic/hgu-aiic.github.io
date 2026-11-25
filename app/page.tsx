@@ -10,7 +10,7 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH?.replace(/\/$/, "") ?? "";
 const assetPath = (path: string) => `${basePath}${path}`;
 const sceneLabels = ["AI Accelerator", "소개", "AI 인프라", "NVIDIA B200", "NVIDIA RTX Pro 6000", "NVIDIA GB200 NVL72 · 도입 예정", "이용방법", "이용요금", "FAQ", "문의"];
 const useCases = [
-  { icon: BrainCircuit, title: "AI / LLM", text: "대규모 언어모델 학습과 추론" }, { icon: Eye, title: "Computer Vision", text: "고해상도 영상 분석과 모델 개발" },
+  { icon: BrainCircuit, title: "AI / LLM", text: "대규모 언어모델 학습" }, { icon: Eye, title: "Computer Vision", text: "고해상도 영상 분석과 모델 개발" },
   { icon: Dna, title: "Bio AI", text: "생명과학 데이터 기반 AI 연구" }, { icon: Database, title: "Data Science", text: "대규모 데이터 분석과 실험" },
   { icon: Sparkles, title: "Deep Learning", text: "복잡한 신경망의 빠른 학습" }, { icon: Server, title: "Research Computing", text: "고성능 병렬 연산과 시뮬레이션" },
 ];
@@ -71,14 +71,28 @@ export default function Home() {
     const render = () => {
       frame = 0;
       if (!desktop.matches || reduced.matches) { scenes.forEach((scene) => scene.removeAttribute("style")); sceneNav?.classList.remove("is-visible"); return; }
-      const rect = story.getBoundingClientRect(); const range = Math.max(1, story.offsetHeight - window.innerHeight); const progress = clamp(-rect.top / range) * (scenes.length - 1); const current = Math.min(scenes.length - 1, Math.floor(progress)); const next = Math.min(scenes.length - 1, current + 1); const phase = progress - current;
+      const rect = story.getBoundingClientRect();
+      const range = Math.max(1, story.offsetHeight - window.innerHeight);
+      const sceneDistance = range / (scenes.length - 1);
+      const rawProgress = clamp(-rect.top / range) * (scenes.length - 1);
+      const nearest = Math.round(rawProgress);
+      const progress = Math.abs(rawProgress - nearest) * sceneDistance <= 2 ? nearest : rawProgress;
+      const current = Math.floor(progress);
+      const next = Math.min(scenes.length - 1, current + 1);
+      const phase = progress - current;
       const active = Math.round(progress); sceneNav?.classList.toggle("is-visible", rect.top <= 0 && rect.bottom > 0 && active > 0); gpuNavGroup?.classList.toggle("has-active", active >= 2 && active <= 5); dots.forEach((dot) => { const index = Number(dot.dataset.sceneIndex); dot.classList.toggle("is-active", index === active); dot.setAttribute("aria-current", index === active ? "step" : "false"); });
       scenes.forEach((scene, index) => {
         scene.classList.toggle("is-scene-active", index === active);
         let opacity = 0; let scale = 1.02; let y = 24; let blur = 4; let zIndex = 1;
         if (index === current) { const outgoing = smoothstep(0, .45, phase); opacity = 1 - outgoing; scale = 1 - .02 * outgoing; y = -20 * outgoing; blur = 4 * outgoing; zIndex = 11; }
         if (index === next) { const incoming = current === next ? 1 : smoothstep(.15, .7, phase); opacity = Math.max(opacity, incoming); scale = 1.02 - .02 * incoming; y = 24 * (1 - incoming); blur = 4 * (1 - incoming); zIndex = 12; }
-        scene.style.opacity = String(opacity); scene.style.transform = `translate3d(0, ${y}px, 0) scale(${scale})`; scene.style.filter = `blur(${blur}px)`; scene.style.visibility = opacity > .01 ? "visible" : "hidden"; scene.style.pointerEvents = opacity > .6 ? "auto" : "none"; scene.style.zIndex = String(zIndex);
+        scene.style.opacity = String(opacity);
+        scene.style.transform = y === 0 && scale === 1 ? "none" : `translate3d(0, ${y}px, 0) scale(${scale})`;
+        scene.style.filter = blur === 0 ? "none" : `blur(${blur}px)`;
+        scene.style.willChange = opacity === 1 ? "auto" : "";
+        scene.style.visibility = opacity > .01 ? "visible" : "hidden";
+        scene.style.pointerEvents = opacity > .6 ? "auto" : "none";
+        scene.style.zIndex = String(zIndex);
       });
     };
     const snapToClosest = () => {
@@ -131,11 +145,50 @@ export default function Home() {
         <section className="story-scene hero"><div className="hero-grid" aria-hidden="true" /><div className="hero-copy"><p className="eyebrow">HANDONG GLOBAL UNIVERSITY <span /> AI INNOVATION CENTER</p><h1>한동대학교<br /><em>AI Accelerator</em></h1><p className="hero-lead">연구와 교육을 위한<br />고성능 AI Computing Infrastructure</p><p className="hero-desc">한동대학교 AI 혁신센터가 운영하는 GPU 기반 AI 연구 인프라를 소개합니다.</p><div className="hero-actions"><a className="button primary" href="#infrastructure" onClick={(event)=>{event.preventDefault();goToStoryScene(2)}}>인프라 살펴보기 <ArrowDown size={17} /></a><a className="button secondary" href="#access" onClick={(event)=>{event.preventDefault();goToStoryScene(6)}}>이용 방법</a></div></div><HeroCoin /><div className="scroll-cue"><span>SCROLL TO EXPLORE</span><i /></div></section>
         <section id="about" className="story-scene usecase-section intro-section"><div className="story-index">01 / 09</div><div className="section-heading"><p className="section-kicker">ABOUT THE INFRASTRUCTURE</p><h2>아이디어가 연구가 되는 곳</h2></div><div className="usecase-grid">{useCases.map(({icon:Icon,title,text})=><article key={title}><Icon /><h3>{title}</h3><p>{text}</p><span>SUPPORTED AREA</span></article>)}</div><p className="intro-statement">본 AI 인프라는 한동대학교 및 지역 내/외 협력 기관의 AI 연구/산학/교육/행정을 지원하기 위해 구축·운영됩니다.</p></section>
         <section id="infrastructure" className="story-scene layers-section" data-reveal><div className="story-index">02 / 09</div><div className="layer-layout"><div className="infrastructure-copy"><div className="section-heading light"><p className="section-kicker">AI INFRASTRUCTURE</p><h2><span>연산부터 데이터까지,</span><span>하나로 연결된 AI 인프라</span></h2></div><p className="infrastructure-summary"><span>AI 가속기 운영 플랫폼을 중심으로</span><span>고성능 GPU 연산 자원과 연구용 저장공간이</span><span>통합된 환경으로 제공됩니다.</span></p></div><InfrastructureDiagram /></div></section>
-        <section id="b200" className="story-scene compute-section"><div className="story-index">03 / 09</div><div className="compute-row"><div className="compute-copy"><span className="index">01 / PRIMARY COMPUTE</span><h3>NVIDIA B200</h3><p>대규모 AI 학습과 고성능 연산을 위한 핵심 GPU 환경입니다.</p><ul><li><b>8 × B200 GPUs</b><span>Blackwell GPU 구성</span></li><li><b>1.44 TB HBM3e</b><span>GPU당 180 GB 메모리</span></li><li><b>64 TB/s</b><span>전체 메모리 대역폭</span></li><li><b>14.4 TB/s NVLink</b><span>5세대 NVLink · NVSwitch</span></li></ul></div><ComputeGraphic /></div></section>
+        <section id="b200" className="story-scene compute-section"><div className="story-index">03 / 09</div><div className="compute-row"><div className="compute-copy"><span className="index">01 / PRIMARY COMPUTE</span><h3>NVIDIA B200</h3><p className="b200-description">대규모 AI 학습과 고성능 연산을 위한 핵심 GPU 환경입니다.</p><ul><li><b>8 × B200 GPUs</b><span>Blackwell GPU 구성</span></li><li><b>1.44 TB HBM3e</b><span>GPU당 180 GB 메모리</span></li><li><b>64 TB/s</b><span>전체 메모리 대역폭</span></li><li><b>14.4 TB/s NVLink</b><span>5세대 NVLink · NVSwitch</span></li></ul></div><ComputeGraphic /></div></section>
         <section id="rtx-pro-6000" className="story-scene compute-section rtx-scene"><div className="story-index">04 / 09</div><div className="compute-row reverse"><div className="compute-copy"><span className="index">02 / RESEARCH COMPUTE</span><h3>RTX PRO 6000</h3><p>비전, 생성형 AI, 실험 중심 연구를 유연하게 지원합니다.</p><ul><li><b>16 GPUs</b><span>확장 가능한 연구 자원</span></li><li><b>96GB GPU Memory</b><span>대용량 모델과 데이터셋</span></li><li><b>AI · Vision · Research</b><span>다양한 연구 환경</span></li></ul></div><ComputeGraphic variant="rtx" /></div></section>
-        <section id="nvl72" className="story-scene nvl-section"><div className="story-index">05 / 09</div><div className="nvl-copy"><span className="index">03 / NEXT COMPUTE</span><h3>NVIDIA<br />GB200 NVL72</h3><p>대규모 생성형 AI와 차세대 모델 연구를 위한 랙 스케일 GPU 시스템입니다.</p><ul className="nvl-specs"><li><b>72 Blackwell GPUs</b><span>하나의 NVLink 도메인</span></li><li><b>36 Grace CPUs</b><span>2,592 Arm 코어</span></li><li><b>13.4TB HBM3E</b><span>576TB/s 메모리 대역폭</span></li></ul></div><figure className="nvl-visual"><div className="equipment-halo nvl-halo" aria-hidden="true" /><Image src={assetPath("/nvl72.webp")} width={1200} height={900} sizes="(max-width: 900px) 90vw, 48vw" alt="NVIDIA GB200 NVL72 랙 시스템" /><figcaption><span>NVIDIA GB200 NVL72</span><small>도입 예정</small></figcaption></figure></section>
+        <section id="nvl72" className="story-scene nvl-section"><div className="story-index">05 / 09</div><div className="nvl-copy"><span className="index">03 / NEXT COMPUTE</span><h3>NVIDIA<br />GB200 NVL72</h3><p className="nvl-description">대규모 생성형 AI와 차세대 모델 연구를 위한 랙<br /> 스케일 GPU 시스템입니다.</p><ul className="nvl-specs"><li><b>72 Blackwell GPUs</b><span>하나의 NVLink 도메인</span></li><li><b>36 Grace CPUs</b><span>2,592 Arm 코어</span></li><li><b>13.4TB HBM3E</b><span>576TB/s 메모리 대역폭</span></li></ul></div><figure className="nvl-visual"><div className="equipment-halo nvl-halo" aria-hidden="true" /><Image src={assetPath("/nvl72.webp")} width={1200} height={900} sizes="(max-width: 900px) 90vw, 48vw" alt="NVIDIA GB200 NVL72 랙 시스템" /><figcaption><span>NVIDIA GB200 NVL72</span><small>도입 예정</small></figcaption></figure></section>
         <section id="access" className="story-scene access-section"><div className="section-heading"><p className="section-kicker">SIMPLE ACCESS</p><h2>신청부터 반환까지,<br />명확한 이용 절차</h2></div><div className="steps">{[["01","이용 신청","연구 목적과 필요한 자원을 작성합니다."],["02","사용 승인","센터에서 과제와 자원 규모를 검토합니다."],["03","사용료 지불","승인된 자원과 기간에 따라 사용료를 지불합니다."],["04","GPU 및 스토리지 할당","승인 일정에 맞춰 연산·저장 자원을 제공합니다."],["05","AI 연구 개발에 활용","할당된 환경에서 연구와 개발을 수행합니다."],["06","백업 및 반환","필요 데이터를 백업하고 자원을 반환합니다."]].map(([n,t,d],i)=><article key={n}><span>{n}</span><div><h3>{t}</h3><p>{d}</p></div>{i<5&&<ArrowRight aria-hidden="true" />}</article>)}</div></section>
-        <section id="pricing" className="story-scene pricing-section"><div className="section-heading"><p className="section-kicker">SERVICE PRICING</p><h2>이용 요금 안내</h2><p className="pricing-lead">이용 요금은 운영 정책 확정 후 공개됩니다. 아래 항목별 기준에 따라 투명하게 안내할 예정입니다.</p></div><div className="pricing-grid">{[["NVIDIA B200","GPU 시간 기준","GPU 수 × 이용 시간"],["RTX PRO 6000","GPU 시간 기준","GPU 수 × 이용 시간"]].map(([title,unit,basis],i)=><article key={title}><div className="price-card-head"><span>{String(i+1).padStart(2,"0")}</span><b>요금 확정 예정</b></div><h3>{title}</h3><div className="price-placeholder"><strong>별도 공지</strong><small>/ {unit}</small></div><dl><div><dt>산정 기준</dt><dd>{basis}</dd></div><div><dt>할인 정책</dt><dd>교내·공동연구 기준 검토 중</dd></div></dl></article>)}</div><div className="refund-policy"><div><p className="section-kicker">CANCELLATION & REFUND</p><h3>취소 및 환불 규정</h3><p>예약 변경과 환불 기준은 최종 이용 요금과 함께 확정하여 공지합니다.</p></div><ul><li><span>01</span><div><b>사용 전 취소</b><p>예약 시작 전 취소 시점에 따른 환불 기준을 적용할 예정입니다.</p></div></li><li><span>02</span><div><b>사용 시작 후 취소</b><p>실제 사용된 자원과 시간을 기준으로 정산하는 방안을 검토 중입니다.</p></div></li><li><span>03</span><div><b>센터 사유 중단</b><p>장비 장애 등 센터 사유로 이용이 중단된 경우 보상 또는 환불 기준을 마련할 예정입니다.</p></div></li></ul><p className="policy-note">※ 본 내용은 정책 수립을 위한 안내 틀이며, 확정 전에는 효력이 없습니다.</p></div></section>
+        <section id="pricing" className="story-scene pricing-section">
+          <div className="section-heading">
+            <h2>이용 요금 안내</h2>
+            <p className="pricing-lead">GPU 1장당 월(30일 기준) 이용료입니다.</p>
+            <p className="pricing-period">
+              베타테스트 기간 <time dateTime="2026-12-31">~26.12.31</time>
+            </p>
+          </div>
+          <div className="pricing-grid">
+            {[
+              { title: "NVIDIA B200", description: "대규모 AI 모델 학습", monthlyPrice: 6_160_320 },
+              { title: "RTX PRO 6000", description: "AI 모델 개발 및 파인튜닝", monthlyPrice: 1_572_480 },
+            ].map(({ title, description, monthlyPrice }) => (
+              <a
+                key={title}
+                className="pricing-card"
+                href="#contact"
+                title={`${title} 이용 문의`}
+                onClick={(event) => {
+                  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                  if (!window.matchMedia("(min-width: 901px) and (prefers-reduced-motion: no-preference)").matches) return;
+                  event.preventDefault();
+                  goToStoryScene(sceneLabels.length - 1);
+                  history.replaceState(null, "", "#contact");
+                }}
+              >
+                <h3>{title}</h3>
+                <p className="pricing-description">{description}</p>
+                <div className="pricing-regular">
+                  <span>정가 <s>{monthlyPrice.toLocaleString("ko-KR")}원</s></span>
+                  <span className="pricing-badge">베타테스트 50% 할인</span>
+                </div>
+                <p className="pricing-monthly">
+                  <strong>{(monthlyPrice / 2).toLocaleString("ko-KR")}원</strong> <span>/ 월</span>
+                </p>
+              </a>
+            ))}
+            <p className="pricing-campus-note">교내 사용자 할인은 별도 문의해 주세요.</p>
+          </div>
+        </section>
         <section id="faq" className="story-scene faq-section"><div className="section-heading"><p className="section-kicker">FREQUENTLY ASKED QUESTIONS</p><h2>자주 묻는 질문</h2></div><Accordion type="single" collapsible className="faq-list">{faqs.map(([q,a],i)=><AccordionItem value={`item-${i}`} key={q}><AccordionTrigger><span><b>{String(i+1).padStart(2,'0')}</b>{q}</span></AccordionTrigger><AccordionContent>{a}</AccordionContent></AccordionItem>)}</Accordion></section>
         <section id="contact" className="story-scene contact-section"><div className="contact-intro"><p className="section-kicker">CONTACT THE CENTER</p><h2>무엇이든<br />물어보세요.</h2><p>AI 가속기 이용 또는 인프라 관련 문의가 있다면 AI 혁신센터로 문의해 주세요.</p><div className="contact-note"><CheckCircle2 /><span>접수된 문의는 담당자가 확인 후 안내드립니다.</span></div></div><div className="contact-card">{sent ? <div className="success"><CheckCircle2 /><h3>문의가 접수되었습니다.</h3><p>내용을 확인한 뒤 입력하신 이메일로 답변드리겠습니다.</p><button className="button secondary" onClick={()=>setSent(false)}>새 문의 작성</button></div> : <form onSubmit={submitContact}><label className="form-honeypot" aria-hidden="true">웹사이트<input name="website" tabIndex={-1} autoComplete="off" /></label><div className="form-row"><label>이름/직위<input name="name" required maxLength={100} placeholder="홍길동 / 수석 연구원" /></label><label>기관/부서<input name="organization" required maxLength={150} placeholder="한동대 / 인공지능연구소" /></label></div><div className="form-row"><label>이메일<input name="email" type="email" required maxLength={254} placeholder="name@example.com" /></label><label>전화번호<input name="phone" type="tel" required maxLength={40} placeholder="010-1234-5678" /></label></div><label>문의 제목<input name="subject" required maxLength={200} placeholder="문의 제목을 입력해 주세요" /></label><label>문의 내용<textarea name="message" required maxLength={5000} rows={5} placeholder="이용 목적과 필요한 자원을 알려주세요." /></label><button className="button primary submit" disabled={sending}>{sending ? "전송 중..." : "문의 보내기"}<Send size={17}/></button></form>}</div></section>
       </div>
