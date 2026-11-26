@@ -154,7 +154,7 @@ export default function Home() {
             <h2>이용 요금 안내</h2>
             <p className="pricing-lead">GPU 1장당 월(30일 기준) 이용료입니다.</p>
             <p className="pricing-period">
-              베타테스트 기간 <time dateTime="2026-12-31">~26.12.31</time>
+              시범서비스 기간 <time dateTime="2026-12-31">~26.12.31</time>
             </p>
           </div>
           <div className="pricing-grid">
@@ -179,7 +179,7 @@ export default function Home() {
                 <p className="pricing-description">{description}</p>
                 <div className="pricing-regular">
                   <span>정가 <s>{monthlyPrice.toLocaleString("ko-KR")}원</s></span>
-                  <span className="pricing-badge">베타테스트 50% 할인</span>
+                  <span className="pricing-badge">시범서비스 50% 할인</span>
                 </div>
                 <p className="pricing-monthly">
                   <strong>{(monthlyPrice / 2).toLocaleString("ko-KR")}원</strong> <span>/ 월</span>
