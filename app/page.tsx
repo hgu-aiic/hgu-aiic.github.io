@@ -154,7 +154,7 @@ export default function Home() {
             <h2>이용 요금 안내</h2>
             <p className="pricing-lead">GPU 1장당 월(30일 기준) 이용료입니다.</p>
             <p className="pricing-period">
-              시범서비스 기간 <time dateTime="2026-12-31">~26.12.31</time>
+              시범서비스 신청 기간 <time dateTime="2026-12-15">~26.12.15</time>
             </p>
           </div>
           <div className="pricing-grid">
@@ -186,7 +186,7 @@ export default function Home() {
                 </p>
               </a>
             ))}
-            <p className="pricing-campus-note">교내 사용자 할인은 별도 문의해 주세요.</p>
+            <p className="pricing-campus-note">교내 사용자는 별도 문의해 주세요.</p>
           </div>
         </section>
         <section id="faq" className="story-scene faq-section"><div className="section-heading"><p className="section-kicker">FREQUENTLY ASKED QUESTIONS</p><h2>자주 묻는 질문</h2></div><Accordion type="single" collapsible className="faq-list">{faqs.map(([q,a],i)=><AccordionItem value={`item-${i}`} key={q}><AccordionTrigger><span><b>{String(i+1).padStart(2,'0')}</b>{q}</span></AccordionTrigger><AccordionContent>{a}</AccordionContent></AccordionItem>)}</Accordion></section>
